@@ -21,9 +21,27 @@ def main():
 
     print("Hello World!")
 
-    fileContents = open(sourceFile, "r").readlines()
 
     # --- Lexer ---
+    ERROR = False
+
+    lexer = Lexer().get_lexer()
+
+    tokens = lexer.lex(open(sourceFile,'r').read())
+
+    try:
+        for token in copy(tokens):
+            print(token)
+    except errors.LexingError as lexError:
+        ERROR = True
+        print('Token no identificado en la linea: '
+              + str(lexError.getsourcepos().lineno)
+              +" columna: " 
+              + str(lexError.getsourcepos().colno - 1))
+    if not ERROR:
+        print('The program is lexically correct')
+
+
     
 
 if __name__ == "__main__":
