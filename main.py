@@ -1,4 +1,4 @@
-from Lexer.src.Lexer import Lexer
+from Lexer.src.lexer import Lexer
 import sys
 from copy import copy
 import os.path
@@ -18,25 +18,25 @@ def main():
 
     # --- Lexer ---
     ERROR = False
+    lexer_init = Lexer()
+    lexer = lexer_init.get_lexer()
 
-    lexer = Lexer().get_lexer()
-
-    tokens = lexer.lex(open(sourceFile,'r').read())
+    with open(sourceFile, "r", encoding="utf-8") as f:
+        source_code = f.read()
+        source_lines = source_code.splitlines()
 
     try:
-        for token in copy(tokens):
-            print(token)
+        for token in lexer.lex(source_code):
+            lexer_init.categorize_token(token)
     except errors.LexingError as lexError:
         ERROR = True
-        print('Token no identificado en la linea: '
-              + str(lexError.getsourcepos().lineno)
-              +" columna: " 
-              + str(lexError.getsourcepos().colno - 1))
+        line = source_lines[lexError.getsourcepos().lineno - 1]
+        print(f"Token no valido en la línea: {lexError.getsourcepos().lineno}, columna: {lexError.getsourcepos().colno - 1}")
+        print(f"Línea completa:\n{line}")
     if not ERROR:
-        print('\n\nThe program is lexically correct')
+        print("\n\nThe program is lexically correct")
+        lexer_init.summary()
 
-
-    
 
 if __name__ == "__main__":
     main()
