@@ -1,8 +1,8 @@
-from rply import LexerGenerator
-from rply import errors
+from rply import LexerGenerator, errors
 from collections import defaultdict
 
-class Lexer():
+
+class Lexer:
     def __init__(self) -> None:
         self.lexer = LexerGenerator()
         self.category = defaultdict(list)
@@ -10,91 +10,112 @@ class Lexer():
         self._add_tokens()
 
     def _add_tokens(self):
-        #self.lexer.add('NOMBRE_DEL_TOKEN', r'EXPRESION_REGULAR_PARA_IDENTIFICARLO')
-        #self.lexer.add()
+        # self.lexer.add('NOMBRE_DEL_TOKEN', r'EXPRESION_REGULAR_PARA_IDENTIFICARLO')
+        # self.lexer.add()
 
         # --- Keywords ---
         KEYWORDS = [
-            "break", "default", "func", "interface", "select", "case", "defer", "go", "map",
-            "struct", "chan", "else", "goto", "package", "switch", "const", "fallthrough",
-            "if", "range", "type", "continue", "for", "import", "return", "var"
+            "break",
+            "default",
+            "func",
+            "interface",
+            "select",
+            "case",
+            "defer",
+            "go",
+            "map",
+            "struct",
+            "chan",
+            "else",
+            "goto",
+            "package",
+            "switch",
+            "const",
+            "fallthrough",
+            "if",
+            "range",
+            "type",
+            "continue",
+            "for",
+            "import",
+            "return",
+            "var",
         ]
         for KW in KEYWORDS:
-            self.lexer.add(f"KW_{KW.upper()}", fr"\b{KW}\b")
-        
+            self.lexer.add(f"KW_{KW.upper()}", rf"\b{KW}\b")
+
         # --- TYPES ---
-        self.lexer.add("TYPE_INT",          r'int')
-        self.lexer.add("TYPE_FLOAT32",      r'float32')
-        self.lexer.add("TYPE_FLOAT32",      r'float64')
-        self.lexer.add("TYPE_BOOL",         r'bool')
-        self.lexer.add("TYPE_STR",          r'string')
+        self.lexer.add("TYPE_INT", r"int")
+        self.lexer.add("TYPE_FLOAT32", r"float32")
+        self.lexer.add("TYPE_FLOAT32", r"float64")
+        self.lexer.add("TYPE_BOOL", r"bool")
+        self.lexer.add("TYPE_STR", r"string")
 
         # --- Literals ---
-        self.lexer.add('LIT_FLOAT',         r'-?\d+\.\d+')
-        self.lexer.add('LIT_INT',           r'-?\d+')
-        self.lexer.add('LIT_STR',           r'"(\\.|[^"\\])*"')
-        self.lexer.add('LIT_BOOL',          r'Verdadero|Falso')
+        self.lexer.add("LIT_FLOAT", r"-?\d+\.\d+")
+        self.lexer.add("LIT_INT", r"-?\d+")
+        self.lexer.add("LIT_STR", r'"(\\.|[^"\\])*"')
+        self.lexer.add("LIT_BOOL", r"Verdadero|Falso")
 
         # --- Operators ---
-        self.lexer.add("OP_PLUSEQ",         r"\+=")
-        self.lexer.add("OP_PLUSPLUS",       r"\+\+")
-        self.lexer.add("OP_MINUSEQ",        r"-=")
-        self.lexer.add("OP_MINUSMINUS",     r"--")
-        self.lexer.add("OP_LEFTARROW",      r"<-")
-        self.lexer.add("OP_MULEQ",          r"\*=")
-        self.lexer.add("OP_DIVEQ",          r"/=")
-        self.lexer.add("OP_MODEQ",          r"%=")
-        self.lexer.add("OP_ANDEQ",          r"&=")
-        self.lexer.add("OP_ANDAND",         r"&&")
-        self.lexer.add("OP_ANDNOTEQ",       r"&\^=")
-        self.lexer.add("OP_ANDNOT",         r"&\^")
-        self.lexer.add("OP_OREQ",           r"\|=")
-        self.lexer.add("OP_OROR",           r"\|\|")
-        self.lexer.add("OP_XOREQ",          r"\^=")
-        self.lexer.add("OP_SHLEQ",          r"<<=")
-        self.lexer.add("OP_SHREQ",          r">>=")
-        self.lexer.add("OP_EQEQ",           r"==")
-        self.lexer.add("OP_NEQ",            r"!=")
-        self.lexer.add("OP_LTE",            r"<=")
-        self.lexer.add("OP_GTE",            r">=")
-        self.lexer.add("OP_COLONEQ",        r":=")
-        self.lexer.add("OP_DOTDOTDOT",      r"\.\.\.")
+        self.lexer.add("OP_PLUSEQ", r"\+=")
+        self.lexer.add("OP_PLUSPLUS", r"\+\+")
+        self.lexer.add("OP_MINUSEQ", r"-=")
+        self.lexer.add("OP_MINUSMINUS", r"--")
+        self.lexer.add("OP_LEFTARROW", r"<-")
+        self.lexer.add("OP_MULEQ", r"\*=")
+        self.lexer.add("OP_DIVEQ", r"/=")
+        self.lexer.add("OP_MODEQ", r"%=")
+        self.lexer.add("OP_ANDEQ", r"&=")
+        self.lexer.add("OP_ANDAND", r"&&")
+        self.lexer.add("OP_ANDNOTEQ", r"&\^=")
+        self.lexer.add("OP_ANDNOT", r"&\^")
+        self.lexer.add("OP_OREQ", r"\|=")
+        self.lexer.add("OP_OROR", r"\|\|")
+        self.lexer.add("OP_XOREQ", r"\^=")
+        self.lexer.add("OP_SHLEQ", r"<<=")
+        self.lexer.add("OP_SHREQ", r">>=")
+        self.lexer.add("OP_EQEQ", r"==")
+        self.lexer.add("OP_NEQ", r"!=")
+        self.lexer.add("OP_LTE", r"<=")
+        self.lexer.add("OP_GTE", r">=")
+        self.lexer.add("OP_COLONEQ", r":=")
+        self.lexer.add("OP_DOTDOTDOT", r"\.\.\.")
 
-        self.lexer.add("OP_PLUS",           r"\+")
-        self.lexer.add("OP_MINUS",          r"-")
-        self.lexer.add("OP_MUL",            r"\*")
-        self.lexer.add("OP_DIV",            r"/")
-        self.lexer.add("OP_MOD",            r"%")
-        self.lexer.add("OP_AND",            r"&")
-        self.lexer.add("OP_OR",             r"\|")
-        self.lexer.add("OP_XOR",            r"\^")
-        self.lexer.add("OP_SHL",            r"<<")
-        self.lexer.add("OP_SHR",            r">>")
-        self.lexer.add("OP_EQ",             r"=")
-        self.lexer.add("OP_LT",             r"<")
-        self.lexer.add("OP_GT",             r">")
-        self.lexer.add("OP_NOT",            r"!")
-        self.lexer.add("OP_TILDE",          r"~")
-        self.lexer.add("OP_DOT",            r"\.")
+        self.lexer.add("OP_PLUS", r"\+")
+        self.lexer.add("OP_MINUS", r"-")
+        self.lexer.add("OP_MUL", r"\*")
+        self.lexer.add("OP_DIV", r"/")
+        self.lexer.add("OP_MOD", r"%")
+        self.lexer.add("OP_AND", r"&")
+        self.lexer.add("OP_OR", r"\|")
+        self.lexer.add("OP_XOR", r"\^")
+        self.lexer.add("OP_SHL", r"<<")
+        self.lexer.add("OP_SHR", r">>")
+        self.lexer.add("OP_EQ", r"=")
+        self.lexer.add("OP_LT", r"<")
+        self.lexer.add("OP_GT", r">")
+        self.lexer.add("OP_NOT", r"!")
+        self.lexer.add("OP_TILDE", r"~")
+        self.lexer.add("OP_DOT", r"\.")
 
         # --- Punctuation ---
-        self.lexer.add("PUNC_LPAREN",       r"\(")
-        self.lexer.add("PUNC_RPAREN",       r"\)")
-        self.lexer.add("PUNC_LBRACK",       r"\[")
-        self.lexer.add("PUNC_RBRACK",       r"\]")
-        self.lexer.add("PUNC_LBRACE",       r"\{")
-        self.lexer.add("PUNC_RBRACE",       r"\}")
-        self.lexer.add("PUNC_COMMA",        r",")
-        self.lexer.add("PUNC_SEMI",         r";")
-        self.lexer.add("PUNC_COLON",        r":")
+        self.lexer.add("PUNC_LPAREN", r"\(")
+        self.lexer.add("PUNC_RPAREN", r"\)")
+        self.lexer.add("PUNC_LBRACK", r"\[")
+        self.lexer.add("PUNC_RBRACK", r"\]")
+        self.lexer.add("PUNC_LBRACE", r"\{")
+        self.lexer.add("PUNC_RBRACE", r"\}")
+        self.lexer.add("PUNC_COMMA", r",")
+        self.lexer.add("PUNC_SEMI", r";")
+        self.lexer.add("PUNC_COLON", r":")
 
-        self.lexer.add('IDENT',             r'[A-Za-z][A-Za-z0-9_]*')
+        self.lexer.add("IDENT", r"[A-Za-z][A-Za-z0-9_]*")
 
         # --- Comments ---
         self.lexer.ignore(r"//[^\n]*")
         self.lexer.ignore(r"/\*[\s\S]*?\*/")
         self.lexer.ignore(r"\s+")
-
 
     def categorize_token(self, token):
         self.token_count += 1
@@ -107,7 +128,11 @@ class Lexer():
         elif name.startswith("TYPE_"):
             self.category["types"].append(value)
 
-        elif name.startswith("LIT_INT") or name.startswith("LIT_FLOAT") or name.startswith("LIT_BOOL"):
+        elif (
+            name.startswith("LIT_INT")
+            or name.startswith("LIT_FLOAT")
+            or name.startswith("LIT_BOOL")
+        ):
             self.category["numbers"].append(value)
 
         elif name.startswith("LIT_STR"):
@@ -127,13 +152,19 @@ class Lexer():
     def summary(self):
         print("\n---------- TOKEN SUMMARY ----------")
         for category, values in self.category.items():
-            first_occurrence = values[0] if values else None
+            unique_values = list(dict.fromkeys(values))
             total = len(values)
-            print(f"{category.capitalize()} ({total}): {' '.join(values)}")
+            print(f"{category.capitalize()} ({total}): {' '.join(unique_values)}")
         print(f"\nTotal tokens: {self.token_count}")
 
+    def save_tokens_to_file(self, filename="tokens.txt"):
+        with open(filename, "w", encoding="utf-8") as f:
+            for category, values in self.category.items():
+                f.write(
+                    f"{category.capitalize()} ({len(values)}): {' '.join(values)}\n"
+                )
+            f.write(f"\nTotal tokens: {self.token_count}\n")
 
     def get_lexer(self):
         self._add_tokens()
         return self.lexer.build()
-    
