@@ -26,8 +26,9 @@ def main():
         source_code = f.read()
         source_lines = source_code.splitlines()
 
+    tokens = lexer.lex(source_code)
     try:
-        for token in lexer.lex(source_code):
+        for token in copy(tokens):
             lexer_init.categorize_token(token)
     except errors.LexingError as lexError:
         ERROR = True
