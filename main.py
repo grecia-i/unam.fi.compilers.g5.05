@@ -2,7 +2,9 @@ from Lexer.src.lexer import Lexer
 import sys
 from copy import copy
 import os.path
+from pathlib import Path
 from rply import errors
+
 
 
 def main():
@@ -40,8 +42,9 @@ def main():
     if not ERROR:
         print("\n\nThe program is lexically correct")
         lexer_init.summary()
-        lexer_init.save_tokens_to_file("tokens.txt")
-
+        project_root = Path(__file__).parent.resolve()
+        out_path =  project_root / f"{Path(sourceFile).stem}.txt" 
+        lexer_init.save_tokens_to_file(str(out_path))
 
 if __name__ == "__main__":
     main()
