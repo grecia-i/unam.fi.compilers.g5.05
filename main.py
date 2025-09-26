@@ -34,9 +34,9 @@ def main():
         ERROR = True
         line = source_lines[lexError.getsourcepos().lineno - 1]
         print(
-            f"Token no valido en la línea: {lexError.getsourcepos().lineno}, columna: {lexError.getsourcepos().colno - 1}"
+            f"Invalid token at line: {lexError.getsourcepos().lineno}, column: {lexError.getsourcepos().colno - 1}"
         )
-        print(f"Línea completa:\n{line}")
+        print(f"Complete line:\n{line}")
     if not ERROR:
         print("\n\nThe program is lexically correct")
         lexer_init.summary()
