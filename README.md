@@ -1,7 +1,8 @@
 #  COMPILERS • 2026-1 #
 This repository covers the work and projects related to the subject of compilers at the Faculty of Engineering, UNAM. The main objective is to develop a compiler using concepts learned during the semester. 
 
-## Lexer
+## Phases of the compiler
+### Lexer
 The programs implements a simple lexical analizer using [rply](https://pypi.org/project/rply/), it takes a source file as input and generates a token stream and a summary of said token stream.
 The tokens are saved to a `.txt` file. 
 
@@ -11,7 +12,7 @@ Requirements:
 - python 3.8+
 - [rply](https://pypi.org/project/rply/)
 
-    ### How to run
+    #### How to run
     Install the dependencies with:
     ```pip install rply```
 
