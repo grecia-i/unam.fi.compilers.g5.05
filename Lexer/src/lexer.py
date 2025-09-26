@@ -51,7 +51,7 @@ class Lexer:
         self.lexer.add("LIT_FLOAT", r"-?\d+\.\d+")
         self.lexer.add("LIT_INT", r"-?\d+")
         self.lexer.add("LIT_STR", r'"(\\.|[^"\\])*"')
-        self.lexer.add("LIT_BOOL", r"Verdadero|Falso")
+        self.lexer.add("LIT_BOOL", r"true|false")
 
         # --- Operators ---
         self.lexer.add("OP_PLUSEQ", r"\+=")
