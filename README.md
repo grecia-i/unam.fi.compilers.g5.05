@@ -25,5 +25,6 @@ Requirements:
 The project includes a few examples of both valid and not valid source files in the directory `tests`
 
 ***The report can be found in docs/Team05_Compilers_Lexer.pdf***
+
 📄 [View the Report](docs/Team05_Compilers_Lexer.pdf)
 
