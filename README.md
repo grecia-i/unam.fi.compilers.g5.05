@@ -12,13 +12,13 @@ Requirements:
 - [rply](https://pypi.org/project/rply/)
 
     ### How to run
-    install the dependencies with:
+    Install the dependencies with:
     ```pip install rply```
 
     The path to the source file may be specified in one of two ways:
     - directly as a command line argument: `python main.py <path to file>`
     - interactively at teh beginning of the programs execution
 
-    if the source code is valid the program will output a summary of the tokens and save them to a `.txt` file
+    If the source code is valid the program will output a summary of the tokens and save them to a `.txt` file
 
 The project includes a few examples of both valid and not valid source files in the directory `tests`
