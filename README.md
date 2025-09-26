@@ -16,8 +16,8 @@ Requirements:
     ```pip install rply```
 
     The path to the source file may be specified in one of two ways:
-    - directly as a command line argument: `python main.py <path to file>`
-    - interactively at teh beginning of the programs execution
+    - Directly as a command line argument: `python main.py <path to file>`
+    - Interactively at the beginning of the programs execution
 
     If the source code is valid the program will output a summary of the tokens and save them to a `.txt` file
 
