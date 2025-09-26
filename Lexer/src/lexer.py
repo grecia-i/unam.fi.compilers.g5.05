@@ -14,35 +14,31 @@ class Lexer:
         # self.lexer.add()
 
         # --- Keywords ---
-        KEYWORDS = [
-            "break",
-            "default",
-            "func",
-            "interface",
-            "select",
-            "case",
-            "defer",
-            "go",
-            "map",
-            "struct",
-            "chan",
-            "else",
-            "goto",
-            "package",
-            "switch",
-            "const",
-            "fallthrough",
-            "if",
-            "range",
-            "type",
-            "continue",
-            "for",
-            "import",
-            "return",
-            "var",
-        ]
-        for KW in KEYWORDS:
-            self.lexer.add(f"KW_{KW.upper()}", rf"\b{KW}\b")
+        self.lexer.add("KW_BREAK",          r"\bbreak\b")
+        self.lexer.add("KW_DEFAULT",        r"\bdefault\b")
+        self.lexer.add("KW_FUNC",           r"\bfunc\b")
+        self.lexer.add("KW_INTERFACE",      r"\binterface\b")
+        self.lexer.add("KW_SELECT",         r"\bselect\b")
+        self.lexer.add("KW_CASE",           r"\bcase\b")
+        self.lexer.add("KW_DEFER",          r"\bdefer\b")
+        self.lexer.add("KW_GO",             r"\bgo\b")
+        self.lexer.add("KW_MAP",            r"\bmap\b")
+        self.lexer.add("KW_STRUCT",         r"\bstruct\b")
+        self.lexer.add("KW_CHAN",           r"\bchan\b")
+        self.lexer.add("KW_ELSE",           r"\belse\b")
+        self.lexer.add("KW_GOTO",           r"\bgoto\b")
+        self.lexer.add("KW_PACKAGE",        r"\bpackage\b")
+        self.lexer.add("KW_SWITCH",         r"\bswitch\b")
+        self.lexer.add("KW_CONST",          r"\bconst\b")
+        self.lexer.add("KW_FALLTHROUGH",    r"\bfallthrough\b")
+        self.lexer.add("KW_IF",             r"\bif\b")
+        self.lexer.add("KW_RANGE",          r"\brange\b")
+        self.lexer.add("KW_TYPE",           r"\btype\b")
+        self.lexer.add("KW_CONTINUE",       r"\bcontinue\b")
+        self.lexer.add("KW_FOR",            r"\bfor\b")
+        self.lexer.add("KW_IMPORT",         r"\bimport\b")
+        self.lexer.add("KW_RETURN",         r"\breturn\b")
+        self.lexer.add("KW_VAR",            r"\bvar\b")
 
         # --- TYPES ---
         self.lexer.add("TYPE_INT", r"int")
