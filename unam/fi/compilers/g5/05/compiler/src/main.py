@@ -1,4 +1,4 @@
-from Lexer.src.modules.lexer import Lexer
+from modules.lexer import Lexer
 import sys
 from copy import copy
 import os.path
