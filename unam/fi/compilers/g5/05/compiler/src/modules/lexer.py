@@ -43,7 +43,7 @@ class Lexer:
         # --- TYPES ---
         self.lexer.add("TYPE_INT", r"int")
         self.lexer.add("TYPE_FLOAT32", r"float32")
-        self.lexer.add("TYPE_FLOAT32", r"float64")
+        self.lexer.add("TYPE_FLOAT64", r"float64")
         self.lexer.add("TYPE_BOOL", r"bool")
         self.lexer.add("TYPE_STR", r"string")
 
@@ -153,7 +153,7 @@ class Lexer:
             print(f"{category.capitalize()} ({total}): {' '.join(unique_values)}")
         print(f"\nTotal tokens: {self.token_count}")
 
-    def save_tokens_to_file(self, filename="tokens.txt"):
+    def tokens_to_file(self, filename="tokens.txt"):
         with open(filename, "w", encoding="utf-8") as f:
             for category, values in self.category.items():
                 f.write(

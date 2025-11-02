@@ -1,9 +1,0 @@
-Keywords (9): package import func if return var for return func
-Identifiers (21): main fibonacciIterative n n n n2 n1 i i n i n2 n1 n1 n1 n2 n1 main fmt Println fibonacciIterative
-Strings (1): "fmt"
-Delimiters (22): ( ) { { } , , ; ; { , , } } ( ) { ( ( ) ) }
-Types (2): int int
-Operators (8): <= = := <= ++ = + .
-Numbers (5): 1 0 1 2 9
-
-Total tokens: 68
