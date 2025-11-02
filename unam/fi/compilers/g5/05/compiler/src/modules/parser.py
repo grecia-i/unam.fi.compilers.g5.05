@@ -4,7 +4,7 @@ from nltk.tree import *
 from collections import defaultdict
 from pathlib import Path
 import json
-from nltk import Tree as NLTKTree
+from nltk import Tree as Tree
 
 class Parser:
     def __init__(self):
@@ -81,7 +81,7 @@ class Parser:
         @self.pg.production("ImportDecls : ImportDecls ImportDecl")
         #@self.pg.production("ImportDecls : ImportDecls ImportDecl PUNC_SEMI")
         def import_list(p):
-            return Tree("ImportDecls", p[0].leaves() + [p[1]])
+            return Tree("ImportDecls", list(p[0]) + [p[1]])
 
         @self.pg.production("ImportDecl : KW_IMPORT ImportSpec")
         def import_decl(p):
@@ -106,7 +106,7 @@ class Parser:
         @self.pg.production("TopLevelDecls : TopLevelDecls TopLevelDecl")
         #@self.pg.production("TopLevelDecls : TopLevelDecls TopLevelDecl PUNC_SEMI")
         def top_level_list(p):
-            return Tree("TopLevelDecls", p[0].leaves() + [p[1]])
+            return Tree("TopLevelDecls", list(p[0]) + [p[1]])
 
         @self.pg.production("TopLevelDecl : TypeDecl")
         @self.pg.production("TopLevelDecl : FunctionDecl")
@@ -161,7 +161,7 @@ class Parser:
 
         @self.pg.production("ParameterList : ParameterList PUNC_COMMA ParameterDecl")
         def multiple_parameters(p):
-            return Tree("Parameters", p[0].leaves() + [p[2]])
+            return Tree("Parameters", list(p[0]) + [p[2]])
 
         @self.pg.production("ParameterDecl : IDENT Type")
         def parameter_decl(p):
@@ -208,7 +208,7 @@ class Parser:
 
         @self.pg.production("VarSpecList : VarSpecList PUNC_SEMI VarSpec")
         def varspeclist_multi(p):
-            return Tree("VarSpecList", p[0].leaves() + [p[2]])
+            return Tree("VarSpecList", list(p[0]) + [p[2]])
 
 
         # VAR SPEC (three unambiguous cases)
@@ -231,7 +231,7 @@ class Parser:
 
         @self.pg.production("IDENTList : IDENTList PUNC_COMMA IDENT")
         def identlist_multi(p):
-            return Tree("IdentifierList", p[0].leaves() + [Tree("Identifier", [p[2].getstr()])])
+            return Tree("IdentifierList", list(p[0]) + [Tree("Identifier", [p[2].getstr()])])
 
         @self.pg.production("ExpressionList : Expression")
         def exprlist_single(p):
@@ -239,7 +239,7 @@ class Parser:
 
         @self.pg.production("ExpressionList : ExpressionList PUNC_COMMA Expression")
         def exprlist_multi(p):
-            return Tree("ExpressionList", p[0].leaves() + [p[2]])
+            return Tree("ExpressionList", list(p[0]) + [p[2]])
                 
         #### Expresiones
 
@@ -339,7 +339,7 @@ class Parser:
 
         @self.pg.production("ElementList : ElementList PUNC_COMMA KeyedElement")
         def element_list_multiple(p):
-            return Tree("ElementList", p[0].leaves() + [p[2]])
+            return Tree("ElementList", list(p[0]) + [p[2]])
 
         # Key-value pairs in struct literals
         @self.pg.production("KeyedElement : Key PUNC_COLON Expression")
@@ -401,7 +401,7 @@ class Parser:
 
         @self.pg.production("ArgumentList : ArgumentList PUNC_COMMA Expression")
         def multiple_args(p):
-            return Tree("ArgumentList", p[0].leaves() + [p[2]])
+            return Tree("ArgumentList", list(p[0]) + [p[2]])
 
         @self.pg.production("Block : PUNC_LBRACE StatementList PUNC_RBRACE")
         def block(p):
@@ -414,7 +414,7 @@ class Parser:
         @self.pg.production("StatementList : StatementList Statement")
         #@self.pg.production("StatementList : StatementList Statement PUNC_SEMI")
         def stmt_list(p):
-            return Tree("StatementList", p[0].leaves() + [p[1]])
+            return Tree("StatementList", list(p[0]) + [p[1]])
 
         @self.pg.production("Statement : ")  # Empty statement
         def empty_statement(p):
@@ -495,7 +495,7 @@ class Parser:
 
         @self.pg.production("CaseClauses : CaseClauses CaseClause")
         def case_clauses(p):
-            return Tree("CaseClauses", p[0].leaves() + [p[1]])
+            return Tree("CaseClauses", list(p[0]) + [p[1]])
 
         @self.pg.production("CaseClause : KW_CASE Expression PUNC_COLON StatementList")
         def case_clause(p):
@@ -594,7 +594,7 @@ class Parser:
 
         @self.pg.production("FieldDeclList : FieldDeclList FieldDecl PUNC_SEMI")
         def field_decl_list(p):
-            return Tree("FieldDecls", p[0].leaves() + [p[1]])
+            return Tree("FieldDecls", list(p[0]) + [p[1]])
 
         @self.pg.production("StructType : KW_STRUCT PUNC_LBRACE StructFieldDecls PUNC_RBRACE")
         def struct_type(p):
@@ -614,7 +614,7 @@ class Parser:
 
         @self.pg.production("StructFieldDeclList : StructFieldDeclList StructFieldDecl")
         def multiple_struct_fields(p):
-            return Tree("StructFieldDecls", p[0].leaves() + [p[1]])
+            return Tree("StructFieldDecls", list(p[0]) + [p[1]])
 
         @self.pg.production("StructFieldDecl : FieldDecl PUNC_SEMI")
         @self.pg.production("StructFieldDecl : FieldDecl")

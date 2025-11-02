@@ -1,19 +1,3 @@
-/*package main
-
-import "fmt"
-
-func main() {
-	// fibonacci
-	n := 10
-	// number of fib numbs to generate
-	a, b := 0,1
-	for i := 0; i<n ; i++ {
-		fmt.Println(a)
-		a, b = b, a+b
-
-	}
-}*/
-
 package main
 
 import "fmt"
