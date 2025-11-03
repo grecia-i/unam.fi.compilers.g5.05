@@ -74,7 +74,7 @@ def main():
             # Required project output
             print("Parsing Success!") 
             
-            print_and_save_tree(parse_tree, sourceFile)
+            #print_and_save_tree(parse_tree, sourceFile)
             
         except errors.ParsingError as parseError:
             # --- SYNTAX ERROR ---
