@@ -648,7 +648,17 @@ class Parser:
         @self.pg.production("Literal : LIT_STR")
         @self.pg.production("Literal : LIT_BOOL")
         def literal(p):
-            return Tree("Literal", [p[0].getstr()])
+            token_type = p[0].gettokentype() # Ej: "LIT_INT"
+            token_value = p[0].getstr()
+            # Guardamos el tipo de literal en el label del sub-árbol
+            if token_type == 'LIT_INT':
+                return Tree("IntLiteral", [token_value])
+            elif token_type == 'LIT_STR':
+                return Tree("StringLiteral", [token_value])
+            elif token_type == 'LIT_FLOAT':
+                return Tree("FloatLiteral", [token_value])
+            elif token_type == 'LIT_BOOL':
+                return Tree("BoolLiteral", [token_value])
 
         @self.pg.production("Identifier : IDENT")
         def identifier(p):
