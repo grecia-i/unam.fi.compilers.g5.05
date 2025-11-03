@@ -411,7 +411,11 @@ class Parser:
         
 
         @self.pg.production("Operand : Literal")
-        @self.pg.production("Operand : IDENT")
+        def operand_lit(p):
+            return p[0]  # Return Literal directly
+        @self.pg.production("Operand : IDENT")  
+        def operand_ident(p):
+            return Tree("Identifier", [p[0].getstr()])
         ######
         #@self.pg.production("Operand : OperandName")
         #@self.pg.production("Operand : MethodExpr")
@@ -420,7 +424,7 @@ class Parser:
             if len(p) == 1:
                 return p[0]  # Return Literal or Identifier directly
             else:
-                return p[1]          
+                return p[1]        
         
         # SELECTOR EXPRESSIONS (x.y)
         #@self.pg.production("SelectorExpression : PrimaryExpression OP_DOT IDENT")
