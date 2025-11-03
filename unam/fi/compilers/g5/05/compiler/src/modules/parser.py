@@ -30,7 +30,7 @@ class Parser:
                 "OP_OREQ", "OP_OROR", "OP_XOREQ", "OP_SHLEQ", "OP_SHREQ", 
                 "OP_EQEQ", "OP_NEQ", "OP_LTE", "OP_GTE", "OP_COLONEQ", 
                 "OP_PLUS", "OP_MINUS", "OP_MUL", "OP_DIV", 
-                "OP_MOD", "OP_AND", "OP_OR", "OP_XOR",  
+                "OP_MOD",   
                 "OP_EQ", "OP_LT", "OP_GT", "OP_NOT", "OP_DOT", 
                 # PUNCTUATION
                 "PUNC_LPAREN", "PUNC_RPAREN", "PUNC_LBRACK", "PUNC_RBRACK", 
@@ -41,7 +41,7 @@ class Parser:
                 # KW_INTERFACE, KW_SELECT, KW_DEFER, KW_GO, KW_MAP,
                 # KW_CHAN, KW_GOTO, KW_CONST, KW_FALLTHROUGH, KW_RANGE,
                 # OP_LEFTARROW, OP_ANDNOT, OP_DOTDOTDOT, OP_SHL, OP_SHR
-                # OP_TILDE
+                # OP_TILDE, "OP_AND", "OP_OR", "OP_XOR",
             
             ], precedence=[
                 ("left", ["OP_OROR"]),
@@ -700,27 +700,3 @@ class Parser:
     
     def get_parser(self):
         return self.parser
-
-    def tree_to_file(self, parse_tree, sourceFile):
-        project_root = Path(__file__).parent.resolve()
-        out_path = project_root / f"{Path(sourceFile).stem}.txt"
-
-        with open(out_path, "a", encoding="utf-8") as f:
-            f.write("\n\n---------- PARSE TREE ----------\n")
-            f.write(self.tree_format(parse_tree))
-
-    def tree_format(self, tree, indent=0, is_last=True, prefix=""):
-        branch = "└── " if is_last else "├── "
-        line = prefix + branch + str(tree[0]) + "\n" if isinstance(tree, tuple) else prefix + branch + str(tree) + "\n"
-
-        if isinstance(tree, tuple):
-            children = tree[1:]
-            for i, child in enumerate(children):
-                last = (i == len(children) - 1)
-                line += self.tree_format(child, indent + 1, last, prefix + ("    " if is_last else "│   "))
-        elif isinstance(tree, list):
-            for i, elem in enumerate(tree):
-                last = (i == len(tree) - 1)
-                line += self.tree_format(elem, indent + 1, last, prefix + ("    " if is_last else "│   "))
-        return line
-

@@ -1,13 +1,14 @@
 from modules.lexer import Lexer
 from modules.parser import Parser
 from modules.semantic import SemanticAnalyzer, SemanticError
+from modules.savePrint import *
 from nltk import Tree as NLTKTree
 import sys
 from copy import copy
 import os.path
 from pathlib import Path
 from rply import errors
-from modules.savePrint import *
+
 
 def main():
     if len(sys.argv) == 1:
@@ -56,7 +57,7 @@ def main():
         
         project_root = Path(__file__).parent.resolve()
         out_path =  project_root / f"{Path(sourceFile).stem}.txt" 
-        lexer_init.tokens_to_file(str(out_path))
+        tokens_to_file(lexer_init.category, lexer_init.token_count, str(out_path))
 
         # --- PARSING AND SEMANTIC PHASES ---
         parser_init = Parser()
@@ -73,8 +74,7 @@ def main():
             
             # Required project output
             print("Parsing Success!") 
-            
-            #print_and_save_tree(parse_tree, sourceFile)
+            print_and_save_tree(parse_tree, str(out_path))
             
         except errors.ParsingError as parseError:
             # --- SYNTAX ERROR ---
