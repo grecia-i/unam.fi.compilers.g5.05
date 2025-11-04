@@ -12,7 +12,8 @@ def tokens_to_file(category, token_count, filename="tokens.txt"):
     with open(out_path, "w", encoding="utf-8") as f:
         f.write("\n\n------------- TOKEN SUMMARY ------------\n")
         for cat, values in category.items():
-            f.write(f"{cat.capitalize()} ({len(values)}): {' '.join(values)}\n")
+            unique_values = list(dict.fromkeys(values))
+            f.write(f"{cat.capitalize()} ({len(values)}): {' '.join(unique_values)}\n")
         f.write(f"\nTotal tokens: {token_count}\n")
     print(f"\nTokens summary written to: {out_path}")
 
