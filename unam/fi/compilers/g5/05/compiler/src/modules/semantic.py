@@ -1,4 +1,4 @@
-# --- semantic.py ---
+## --- semantic.py ---
 
 from nltk.tree import Tree
 
@@ -26,12 +26,11 @@ class SymbolTable:
     def add_symbol(self, name, symbol_type_tree):
         """Adds a symbol (variable) to the current scope."""
         current_scope = self.stack[-1]
-        type_name = symbol_type_tree[0] 
-        
+        type_name = symbol_type_tree 
         if name in current_scope:
             raise SemanticError(f"SDT Error: Variable '{name}' already declared in this scope.")
         
-        current_scope[name] = type_name
+        current_scope[name] = type_name[0]
         print(f"[SymbolTable] Declared '{name}' as '{type_name}'")
 
     def lookup_symbol(self, name):
@@ -55,7 +54,6 @@ class SemanticAnalyzer:
             
         node_label = node.label()
         method_name = f'visit_{node_label}'
-        
         visitor_method = getattr(self, method_name, self.generic_visit)
         return visitor_method(node)
 
@@ -63,6 +61,7 @@ class SemanticAnalyzer:
         """Generic visit method: just visits all children."""
         for child in node:
             self.visit(child)
+            
 
     def visit_Block(self, node):
         """SDT Rule: Entering a block creates a new scope."""
@@ -72,9 +71,43 @@ class SemanticAnalyzer:
 
     def visit_VarDecl(self, node):
         """SDT Rule: Process a variable declaration."""
-        for var_spec in node[0]: # Iterate over each VarSpec
+        for var_spec in node[0]:
             self.visit(var_spec) # Call visit_VarSpec
-            
+    
+    def visit_Parameters(self, node):
+        for param_decl_node in node:  # puede haber varios ParameterDecl
+            self.visit(param_decl_node)
+    
+    def visit_ParameterDecl(self, node):
+        """
+        SDT Rule: Treat a function parameter as VarSpec
+        """
+        ident_node = node[0]   # Identifier
+        type_node = node[1]    # SimpleType
+        var_name = ident_node[0]       # "n"
+        var_type_tree = type_node    # Tree("SimpleType", ["int"])
+
+        # Agregar a la tabla como VarSpec
+        self.symbol_table.add_symbol(var_name, var_type_tree)
+
+        print(f"[Semantic] Parameter '{var_name}' declared with type '{var_type_tree}'")
+    
+    def visit_path(self, node):
+        """
+        SDT Rule: Treat a function parameter as VarSpec
+        """
+        
+        ident_node = node  # Identifier
+        type_node = Tree("SimpleType", ["int"])    # SimpleType
+
+        var_name = ident_node[0]       # "n"
+        var_type_tree = type_node    # Tree("SimpleType", ["int"])
+
+        # Agregar a la tabla como VarSpec
+        self.symbol_table.add_symbol(var_name, var_type_tree)
+
+        print(f"[Semantic] Parameter '{var_name}' declared with type '{var_type_tree}'")
+
     def visit_VarSpec(self, node):
         """SDT Rule: Add declared variables to the symbol table."""
         ident_list_node = node[0]
@@ -85,7 +118,7 @@ class SemanticAnalyzer:
             print("WARNING: Type inference is not implemented.")
             return
         
-        var_type_tree = type_node[0]
+        var_type_tree = type_node
         
         for ident_node in ident_list_node:
             var_name = ident_node[0] 
@@ -130,6 +163,12 @@ class SemanticAnalyzer:
         
         self.symbol_table.add_symbol(func_name, Tree("SimpleType", ["function"]))
         
+        self.symbol_table.enter_scope()
+
+        parameters_node = node[1]  # Parameters node
+        if parameters_node:
+            self.visit(parameters_node)  # Llamará a visit_Parameters -> visit_ParameterDecl
+    
         block_node = node[2]
         self.visit(block_node)
         
@@ -147,7 +186,6 @@ class SemanticAnalyzer:
         
         if len(ident_list_node) == 1 and len(expr_list_node) == 1:
             var_name = ident_list_node[0][0] # IdentList -> Ident -> "a"
-            
             expr_type = self.visit(expr_list_node[0])
             
             fake_type_tree = Tree("SimpleType", [expr_type])
@@ -181,6 +219,7 @@ class SemanticAnalyzer:
         """SDT Rule: When using a variable, look it up and return its type."""
         var_name = node[0]
         var_type = self.symbol_table.lookup_symbol(var_name)
+        
         return var_type 
 
     def visit_IntLiteral(self, node):
@@ -194,4 +233,21 @@ class SemanticAnalyzer:
         
     def visit_BoolLiteral(self, node):
         return 'bool'
+    
+    def visit_QualifiedIdent(self, node):
+        """
+        SDT Rule: Treat a function parameter as VarSpec
+        """
+        print("************************")
+        right_type = self.visit(node[0])
+        ident_node = node[1]  # Identifier
+        type_node = Tree("SimpleType", ["int"])    # SimpleType
+
+        var_name = ident_node[0]       # "n"
+        var_type_tree = type_node    # Tree("SimpleType", ["int"])
+        
+        # Agregar a la tabla como VarSpec
+        self.symbol_table.add_symbol(var_name, var_type_tree)
+        right_type = self.visit(node[1])
+        print(f"[Semantic] Parameter '{var_name}' declared with type '{var_type_tree}'")
     
