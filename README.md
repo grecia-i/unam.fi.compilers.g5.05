@@ -9,7 +9,7 @@ The tokens are saved to a `.txt` file.
 
 
 ### Parser / SDT
-Using [rply's](https://pypi.org/project/rply/) parser generator the program defines our language's grammar and structure, for every production it assigns a semantic action and produces a node of the program's parse tree, this parse tree is outputed as a nltk style tree in src/program.txt, afterwards it starts a phase os semantic analysis to verify the context of every production.
+Using [rply's](https://pypi.org/project/rply/) parser generator the program defines our language's grammar and structure, for every production it assigns a semantic action and produces a node of the program's parse tree, this parse tree is outputed as a nltk style tree in src/program.txt, afterwards it starts a phase of semantic analysis to verify the context of every production.
 
 ### Requirements
 
@@ -19,6 +19,7 @@ Using [rply's](https://pypi.org/project/rply/) parser generator the program defi
     #### How to run
     Install the dependencies with:
     ```pip install rply```
+    ```pip install nltk```
 
     The path to the source file may be specified in one of two ways:
     - Directly as a command line argument: `python main.py <path to file>`
@@ -26,7 +27,7 @@ Using [rply's](https://pypi.org/project/rply/) parser generator the program defi
 
     If the source code is valid the program will output a summary of the tokens as well as a parse tree for the source file and save them to a `.txt` file
 
-The project includes a few examples of both valid and no valid source files in the directory `tests`
+The project includes a few examples of both valid and no valid source files in the directory `test`
 
 ***The report can be found in docs/Team05_Compilers_Lexer.pdf***
 
