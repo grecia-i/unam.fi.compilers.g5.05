@@ -53,7 +53,7 @@ def main():
         summary_tokens = lexer.lex(source_code)
         for token in summary_tokens:
             lexer_init.categorize_token(token)
-        lexer_init.summary()
+        # lexer_init.summary()
         
         project_root = Path(__file__).parent.resolve()
         out_path =  project_root / f"{Path(sourceFile).stem}.txt" 

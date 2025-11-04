@@ -15,7 +15,7 @@ class Parser:
                 "KW_BREAK","KW_DEFAULT", "KW_FUNC",  
                 "KW_CASE", 
                 "KW_STRUCT", "KW_ELSE", 
-                "KW_PACKAGE", "KW_SWITCH", "KW_CONST", 
+                "KW_PACKAGE", "KW_SWITCH", 
                 "KW_IF", "KW_TYPE", "KW_CONTINUE", "KW_FOR", 
                 "KW_IMPORT", "KW_RETURN","KW_VAR", 
                 # TYPES
@@ -693,10 +693,10 @@ class Parser:
             elif token_type == 'LIT_BOOL':
                 return Tree("BoolLiteral", [token_value])
         
-        #@self.pg.error
-        #def error_handle(token):
-        #    print("\033[91mERROR SINTACTICO: No se esperaba encontrar el Token '{}' en la línea '{}' columna '{}'".format(token.value,str(token.getsourcepos().lineno),str(token.getsourcepos().colno)))
-        #    raise ValueError(token)
+        @self.pg.error
+        def error_handle(token):
+            print("\033[91mERROR SINTACTICO: No se esperaba encontrar el Token '{}' en la línea '{}' columna '{}'".format(token.value,str(token.getsourcepos().lineno),str(token.getsourcepos().colno)))
+            raise ValueError(token)
         
         # '''
     
