@@ -12,11 +12,11 @@ class Parser:
             # TOKEN NAMES
             [
                 # KEYWORDS
-                "KW_BREAK","KW_DEFAULT", "KW_FUNC", "KW_INTERFACE", 
-                "KW_SELECT", "KW_CASE", "KW_DEFER","KW_GO", "KW_MAP",
-                "KW_STRUCT", "KW_CHAN", "KW_ELSE", "KW_GOTO", 
-                "KW_PACKAGE", "KW_SWITCH", "KW_CONST", "KW_FALLTHROUGH", 
-                "KW_IF", "KW_RANGE", "KW_TYPE", "KW_CONTINUE", "KW_FOR", 
+                "KW_BREAK","KW_DEFAULT", "KW_FUNC",  
+                "KW_CASE", 
+                "KW_STRUCT", "KW_ELSE", 
+                "KW_PACKAGE", "KW_SWITCH", "KW_CONST", 
+                "KW_IF", "KW_TYPE", "KW_CONTINUE", "KW_FOR", 
                 "KW_IMPORT", "KW_RETURN","KW_VAR", 
                 # TYPES
                 "TYPE_INT", "TYPE_FLOAT32", "TYPE_FLOAT64", 
@@ -25,21 +25,35 @@ class Parser:
                 "LIT_FLOAT", "LIT_INT", "LIT_STR", "LIT_BOOL", 
                 # OPERATORS
                 "OP_PLUSEQ", "OP_PLUSPLUS", "OP_MINUSEQ", "OP_MINUSMINUS", 
-                "OP_LEFTARROW", "OP_MULEQ", "OP_DIVEQ", "OP_MODEQ", 
-                "OP_ANDEQ", "OP_ANDAND", "OP_ANDNOTEQ", "OP_ANDNOT", 
+                "OP_MULEQ", "OP_DIVEQ", "OP_MODEQ", 
+                "OP_ANDEQ", "OP_ANDAND", "OP_ANDNOTEQ",  
                 "OP_OREQ", "OP_OROR", "OP_XOREQ", "OP_SHLEQ", "OP_SHREQ", 
                 "OP_EQEQ", "OP_NEQ", "OP_LTE", "OP_GTE", "OP_COLONEQ", 
-                "OP_DOTDOTDOT", "OP_PLUS", "OP_MINUS", "OP_MUL", "OP_DIV", 
-                "OP_MOD", "OP_AND", "OP_OR", "OP_XOR", "OP_SHL", "OP_SHR", 
-                "OP_EQ", "OP_LT", "OP_GT", "OP_NOT", "OP_TILDE", "OP_DOT", 
+                "OP_PLUS", "OP_MINUS", "OP_MUL", "OP_DIV", 
+                "OP_MOD",   
+                "OP_EQ", "OP_LT", "OP_GT", "OP_NOT", "OP_DOT", 
                 # PUNCTUATION
                 "PUNC_LPAREN", "PUNC_RPAREN", "PUNC_LBRACK", "PUNC_RBRACK", 
                 "PUNC_LBRACE", "PUNC_RBRACE", "PUNC_COMMA", "PUNC_SEMI", 
                 "PUNC_COLON",  "IDENT"
+
+                # MISSING SYNTAX FOR TOKENS
+                # KW_INTERFACE, KW_SELECT, KW_DEFER, KW_GO, KW_MAP,
+                # KW_CHAN, KW_GOTO, KW_CONST, KW_FALLTHROUGH, KW_RANGE,
+                # OP_LEFTARROW, OP_ANDNOT, OP_DOTDOTDOT, OP_SHL, OP_SHR
+                # OP_TILDE, "OP_AND", "OP_OR", "OP_XOR",
             
-            ], precedence=[("right", ["KW_ELSE"]),
-            ])
-        self.symbols = dict()
+            ], precedence=[
+                ("left", ["OP_OROR"]),
+                ("left", ["OP_ANDAND"]),
+                ("nonassoc", ["OP_EQEQ", "OP_NEQ", "OP_LT", "OP_GT", "OP_LTE", "OP_GTE"]),
+                ("left", ["OP_PLUS", "OP_MINUS"]),
+                ("left", ["OP_MUL", "OP_DIV", "OP_MOD"]),
+                ("right", ["OP_NOT"]),
+                ("right", ["KW_ELSE"]), 
+            ]
+            
+        )
 
         self.parse()
         self.parser = self.pg.build()
@@ -57,7 +71,6 @@ class Parser:
         SourceFile = PackageClause ";" { ImportDecl ";" } { TopLevelDecl ";" } .
         '''
         ## --------------------------------------------
-        # '''
         # GRAMMAR GRAMMAR
         @self.pg.production("SourceFile : PackageClause PUNC_SEMI ImportDecls TopLevelDecls")
         @self.pg.production("SourceFile : PackageClause ImportDecls TopLevelDecls")
@@ -92,7 +105,7 @@ class Parser:
         @self.pg.production("ImportSpec : IDENT LIT_STR")  # alias "package"
         def import_spec(p):
             if len(p) == 1:
-                return Tree("ImportSpec", [Tree("path", [p[0].getstr()])])
+                return Tree("ImportSpec", [Tree("path", [p[0].getstr().strip('"')])])
             elif p[0].getstr() == '.':
                 return Tree("ImportSpec", [Tree("dot", []), Tree("path", [p[1].getstr()])])
             else:
@@ -111,6 +124,7 @@ class Parser:
         @self.pg.production("TopLevelDecl : TypeDecl")
         @self.pg.production("TopLevelDecl : FunctionDecl")
         @self.pg.production("TopLevelDecl : VarDecl")
+        @self.pg.production("TopLevelDecl : MethodDecl")
         def top_level_decl(p):
             return Tree("TopLevelDecl", [p[0]])
 
@@ -123,21 +137,23 @@ class Parser:
 
         # FUNCTION DECLARATION
         @self.pg.production("FunctionDecl : KW_FUNC IDENT Signature Block")
-        @self.pg.production("FunctionDecl : KW_FUNC IDENT Signature Type Block")  # Return type
+        #@self.pg.production("FunctionDecl : KW_FUNC IDENT Signature Type Block")  # Return type
         def function_decl(p):
             if len(p) == 4:
                 return Tree("FunctionDecl", [Tree("Identifier", [p[1].getstr()]), p[2], p[3]])
             else:
                 return Tree("FunctionDecl", [Tree("Identifier", [p[1].getstr()]), p[2], p[3], p[4]])
         
-        @self.pg.production("FunctionDecl : KW_FUNC IDENT PUNC_LPAREN ParametersOpt PUNC_RPAREN Type Block")
-        def function_decl_with_return(p):
-            return Tree("FunctionDecl", [
-                Tree("Identifier", [p[1].getstr()]), 
-                Tree("Signature", [p[3], Tree("Result", [p[5]])]),
-                p[6]
-            ])
-        
+        # Method declaration
+        @self.pg.production("MethodDecl : KW_FUNC Receiver IDENT Signature Block")
+        def method_decl(p):
+            return ("MethodDecl", p[1], p[2], p[3], p[4])  # Receiver, Name, Sig, Body
+
+        @self.pg.production("Receiver : PUNC_LPAREN ParametersOpt PUNC_RPAREN")
+        def receiver(p):
+            return ("Receiver", p[1])
+
+
         @self.pg.production("TopLevelDecl : error")
         def top_level_error(p):
             print(f"TOP LEVEL ERROR - Unmatched tokens: {p}")
@@ -147,6 +163,7 @@ class Parser:
         def signature(p):
             return Tree("Signature", [p[1], p[3]])  # Parameters, Result
 
+        # Parameters
         @self.pg.production("ParametersOpt : ")
         def empty_parameters(p):
             return Tree("Parameters", [])
@@ -170,6 +187,7 @@ class Parser:
                 p[1]
             ])
 
+        # Results
         @self.pg.production("ResultOpt : ")
         def empty_result(p):
             return Tree("Result", [])
@@ -178,6 +196,7 @@ class Parser:
         def result_type(p):
             return Tree("Result", [p[0]])
 
+        # Assignment operators
         @self.pg.production("AssignOp : OP_EQ")
         @self.pg.production("AssignOp : OP_PLUSEQ")
         @self.pg.production("AssignOp : OP_MINUSEQ")
@@ -192,11 +211,8 @@ class Parser:
         @self.pg.production("AssignOp : OP_ANDNOTEQ")
         @self.pg.production("AssignOp : OP_COLONEQ")
         def assign_op(p):
-            # use the lexeme string (e.g. "=", ":=") instead of the Token object
             return Tree("AssignOp", [p[0].getstr()])
     
-        #### -----------------alsdjaslkdj
-
         # VAR DECLARATIONS
         @self.pg.production("VarDecl : KW_VAR VarSpecList")
         def var_decl(p):
@@ -210,8 +226,7 @@ class Parser:
         def varspeclist_multi(p):
             return Tree("VarSpecList", list(p[0]) + [p[2]])
 
-
-        # VAR SPEC (three unambiguous cases)
+        # VAR SPEC
         @self.pg.production("VarSpec : IDENTList AssignOp ExpressionList")
         def var_spec_untyped(p):
             return Tree("VarSpec", [p[0], Tree("Type", []), p[2]])
@@ -224,7 +239,7 @@ class Parser:
         def var_spec_typed(p):
             return Tree("VarSpec", [p[0], p[1], Tree("ExpressionList", [])])
 
-        # Keep existing helper rules
+        # Mult ident
         @self.pg.production("IDENTList : IDENT")
         def identlist_single(p):
             return Tree("IdentifierList", [Tree("Identifier", [p[0].getstr()])])
@@ -233,6 +248,7 @@ class Parser:
         def identlist_multi(p):
             return Tree("IdentifierList", list(p[0]) + [Tree("Identifier", [p[2].getstr()])])
 
+        # Mult expr
         @self.pg.production("ExpressionList : Expression")
         def exprlist_single(p):
             return Tree("ExpressionList", [p[0]])
@@ -241,7 +257,7 @@ class Parser:
         def exprlist_multi(p):
             return Tree("ExpressionList", list(p[0]) + [p[2]])
                 
-        #### Expresiones
+        #### EXPRESSIONS
 
         # EXPRESSIONS with manual precedence
         @self.pg.production("Expression : LogicalOrExpression")
@@ -306,24 +322,87 @@ class Parser:
                 return p[0]
             return Tree("UnaryExpr", [Tree("Operator", [p[0].getstr()]), p[1]])
 
-        # PRIMARY EXPRESSIONS (the base level)
-        @self.pg.production("PrimaryExpression : Operand")
-        @self.pg.production("PrimaryExpression : SelectorExpression")
-        @self.pg.production("PrimaryExpression : IndexExpression")
-        @self.pg.production("PrimaryExpression : CallExpression")
-        def primary_expression(p):
-            #return Tree("PrimaryExpression", [p[0]])
-            return p[0]
+        # Conversion
+        @self.pg.production("PrimaryExpression : Type PUNC_LPAREN Expression PUNC_RPAREN")
+        def conversion_expr(p):
+            return Tree("Conversion", [p[0], p[2]])
         
+        # Method expression: T.Method
+        @self.pg.production("PrimaryExpression : Type OP_DOT IDENT")
+        def method_expr(p):
+            return Tree("MethodExpr", [p[0], Tree("Identifier", [p[2].getstr()])])
+
+
         @self.pg.production("PrimaryExpression : CompositeLit")
         def primary_composite(p):
-            return p[0] # Type, Elements
+            #return p[0] # Type, Elements
+            return Tree("PrimaryExpression", [p[0]])
+        
+        @self.pg.production("QualifiedIdent : IDENT OP_DOT IDENT")
+        def qualified_ident(p):
+            return Tree("QualifiedIdent", [
+                Tree("Identifier", [p[0].getstr()]),
+                Tree("Identifier", [p[2].getstr()])
+            ])
+        
+        @self.pg.production("PrimaryExpression : Operand PrimarySuffixList")
+        def primary_expression(p):
+            base = p[0]
+            suffix_list = p[1]
+            suffixes = list(suffix_list) if isinstance(suffix_list, Tree) else []
 
-        # Composite literal definition - use existing Type rules (which include SimpleType : IDENT)
+            expr = base
+            for suffix in suffixes:
+                kind = suffix.label()
+                if kind == "SelectorSuffix":
+                    expr = Tree("SelectorExpr", [expr] + list(suffix))
+                elif kind == "IndexSuffix":
+                    expr = Tree("IndexExpr", [expr] + list(suffix))
+                elif kind == "CallSuffix":
+                    expr = Tree("CallExpr", [expr] + list(suffix))
+            return expr
+
+        # Mult suffix
+        @self.pg.production("PrimarySuffixList : ")
+        def empty_primary_suffix_list(p):
+            return Tree("PrimarySuffixList", [])
+
+        @self.pg.production("PrimarySuffixList : PrimarySuffixList PrimarySuffix")
+        def primary_suffix_list(p):
+            suffix_list = p[0]
+            suffix = p[1]
+            # Extend existing list
+            if isinstance(suffix_list, Tree):
+                return Tree("PrimarySuffixList", list(suffix_list) + [suffix])
+            else:
+                return Tree("PrimarySuffixList", [suffix_list, suffix])
+
+        @self.pg.production("PrimarySuffix : OP_DOT IDENT")
+        def selector_suffix(p):
+            return Tree("SelectorSuffix", [Tree("Identifier", [p[1].getstr()])])
+
+        @self.pg.production("PrimarySuffix : PUNC_LBRACK Expression PUNC_RBRACK")
+        def index_suffix(p):
+            return Tree("IndexSuffix", [p[1]])
+
+        @self.pg.production("PrimarySuffix : PUNC_LPAREN ArgumentListOpt PUNC_RPAREN")
+        def call_suffix(p):
+            return Tree("CallSuffix", [p[1]])
+        
+        @self.pg.production("PrimarySuffix : PUNC_LBRACK Expression PUNC_COLON Expression PUNC_RBRACK")
+        def slice_suffix(p):
+            return Tree("SliceSuffix", [p[1], p[3]])
+
+        # Type assertion: x.(Type)
+        @self.pg.production("PrimarySuffix : OP_DOT PUNC_LPAREN Type PUNC_RPAREN")
+        def type_assert_suffix(p):
+            return Tree("TypeAssertSuffix", [p[2]])
+
+        # Composite literal
         @self.pg.production("CompositeLit : Type PUNC_LBRACE ElementListOpt PUNC_RBRACE")
         def composite_literal(p):
             return Tree("CompositeLit", [p[0], p[2]])
-
+ 
         # Element list
         @self.pg.production("ElementListOpt : ")
         def element_list_empty(p):
@@ -350,41 +429,27 @@ class Parser:
         def key_ident(p):
             return Tree("Key", [p[0].getstr()])
         
-
         @self.pg.production("Operand : Literal")
-        @self.pg.production("Operand : IDENT")
+        @self.pg.production("Operand : OperandName")
+        def operand_lit(p):
+            return p[0]  
+        @self.pg.production("Operand : IDENT")  
+        def operand_ident(p):
+            return Tree("Identifier", [p[0].getstr()])
+        ######
+        #@self.pg.production("Operand : OperandName")
+        #@self.pg.production("Operand : MethodExpr")
+        
         @self.pg.production("Operand : PUNC_LPAREN Expression PUNC_RPAREN")
         def operand(p):
             if len(p) == 1:
                 return p[0]  # Return Literal or Identifier directly
             else:
-                return p[1]  
-        '''def operand(p):
-            if len(p) == 1:
-                if isinstance(p[0], Tree):
-                    return Tree("Operand", [p[0]])
-                else:
-                    # It's an IDENT token
-                    return Tree("Identifier", [p[0].getstr()])
-            else:
-                # Parenthesized expression: ( expr )
-                return Tree("Operand", [p[1]])'''
+                return p[1]        
         
-        
-        # SELECTOR EXPRESSIONS (x.y)
-        @self.pg.production("SelectorExpression : PrimaryExpression OP_DOT IDENT")
-        def selector_expression(p):
-            return Tree("SelectorExpr", [p[0], Tree("Identifier", [p[2].getstr()])])
-
-        # INDEX EXPRESSIONS (a[i])
-        @self.pg.production("IndexExpression : PrimaryExpression PUNC_LBRACK Expression PUNC_RBRACK")
-        def index_expression(p):
-            return Tree("IndexExpr", [p[0], p[2]])
-
-        # CALL EXPRESSIONS (f(x, y))
-        @self.pg.production("CallExpression : PrimaryExpression PUNC_LPAREN ArgumentListOpt PUNC_RPAREN")
-        def call_expression(p):
-            return Tree("CallExpr", [p[0], p[2]])
+        @self.pg.production("OperandName : QualifiedIdent")
+        def operand_qualified_ident(p):
+            return p[0]
 
         # ARGUMENT LISTS
         @self.pg.production("ArgumentListOpt : ")
@@ -416,10 +481,6 @@ class Parser:
         def stmt_list(p):
             return Tree("StatementList", list(p[0]) + [p[1]])
 
-        @self.pg.production("Statement : ")  # Empty statement
-        def empty_statement(p):
-            return Tree("EmptyStmt", [])
-
         @self.pg.production("Statement : Expression")
         def stmt_expr(p):
             return Tree("ExprStmt", [p[0]])
@@ -432,44 +493,22 @@ class Parser:
         @self.pg.production("ShortVarDecl : IDENTList OP_COLONEQ ExpressionList")
         def short_var_decl(p):
             return Tree("ShortVarDecl", [p[0], p[2]])
-    
-        @self.pg.production("ShortVarDecl : IDENT OP_COLONEQ Expression")
-        def short_var_decl_single(p):
-            ident_list = Tree("IdentifierList", [Tree("Identifier", [p[0].getstr()])])
-            expr_list = Tree("ExpressionList", [p[2]])
-            return Tree("ShortVarDecl", [ident_list, expr_list])
 
-
+        # Statements
         @self.pg.production("Statement : VarDecl")
         @self.pg.production("Statement : TypeDecl")
         @self.pg.production("Statement : FunctionDecl")
         def stmt_decl(p):
             return Tree("DeclStmt", [p[0]])
 
-        #@self.pg.production("Statement : Expression AssignOp ExpressionList")
-        #def stmt_assignment(p):
-        #    return Tree("AssignStmt", [p[0], p[2]])
-
         @self.pg.production("Statement : ExpressionList AssignOp ExpressionList")
         def stmt_assignment(p):
             return Tree("AssignStmt", [p[0], p[1], p[2]])
-
-        #@self.pg.production("Statement : Expression AssignOp ExpressionList")
-        #def stmt_single_assignment(p):
-        #    expr_list = Tree("ExpressionList", [p[0]])
-        #    return Tree("AssignStmt", [expr_list, p[1], p[2]])
 
         @self.pg.production("Statement : KW_RETURN Expression")
         def stmt_return(p):
             return Tree("ReturnStmt", [p[1]])
 
-        # CONTROL STRUCTURES
-        
-        #IfStmt     = "if" Expression Block [ "else" (IfStmt | Block) ] .
-        #SwitchStmt = "switch" [ Expression ] "{" { CaseClause } "}" .
-        #CaseClause = ( "case" ExpressionList | "default" ) ":" StatementList .
-        #ForStmt    = "for" [ Expression ] Block .
-        
         # IF / ELSE
         @self.pg.production("Statement : KW_IF Expression Block")
         def if_stmt(p):
@@ -510,7 +549,7 @@ class Parser:
         def for_infinite(p):
             return Tree("ForStmt", [Tree("Infinite", []), p[1]])
 
-        # FOR LOOP - Add more comprehensive for loop support
+        # FOR LOOP
         @self.pg.production("Statement : KW_FOR Expression Block")
         def for_loop(p):
             return Tree("ForStmt", [p[1], p[2]])
@@ -541,7 +580,6 @@ class Parser:
         @self.pg.production("SimpleStmt : ShortVarDecl")
         @self.pg.production("SimpleStmt : Expression")
         @self.pg.production("SimpleStmt : IncDecStmt")
-        @self.pg.production("SimpleStmt : Assignment")
         def simple_stmt(p):
             return p[0]
 
@@ -551,12 +589,6 @@ class Parser:
         def inc_dec_stmt(p):
             return Tree("IncDecStmt", [p[0], Tree("Operator", [p[1].getstr()])])
 
-        # ASSIGNMENT
-        @self.pg.production("Assignment : ExpressionList AssignOp ExpressionList")
-        def assignment(p):
-            # p[1] is an AssignOp subtree; its leaf will now be a string lexeme
-            return Tree("Assignment", [p[0], p[1], p[2]])
-
         # BREAK / CONTINUE
         @self.pg.production("Statement : KW_BREAK")
         def break_stmt(p):
@@ -565,6 +597,8 @@ class Parser:
         @self.pg.production("Statement : KW_CONTINUE")
         def continue_stmt(p):
             return Tree("ContinueStmt", [])
+
+        # Type => BuiltinType | IDENT | ArrayType | SliceType | StructType
 
         @self.pg.production("Type : SimpleType")
         @self.pg.production("Type : StructType")
@@ -582,7 +616,6 @@ class Parser:
         @self.pg.production("SimpleType : IDENT")
         def simple_type(p):
             token = p[0]
-            # keep simple types as their lexeme (e.g. "int") or identifier name
             if token.name.startswith('TYPE_'):
                 return Tree("SimpleType", [token.getstr()])
             else:
@@ -648,11 +681,17 @@ class Parser:
         @self.pg.production("Literal : LIT_STR")
         @self.pg.production("Literal : LIT_BOOL")
         def literal(p):
-            return Tree("Literal", [p[0].getstr()])
-
-        @self.pg.production("Identifier : IDENT")
-        def identifier(p):
-            return Tree("Identifier", [p[0].getstr()])
+            token_type = p[0].gettokentype() # Ej: "LIT_INT"
+            token_value = p[0].getstr()
+            # Guardamos el tipo de literal en el label del sub-árbol
+            if token_type == 'LIT_INT':
+                return Tree("IntLiteral", [token_value])
+            elif token_type == 'LIT_STR':
+                return Tree("StringLiteral", [token_value])
+            elif token_type == 'LIT_FLOAT':
+                return Tree("FloatLiteral", [token_value])
+            elif token_type == 'LIT_BOOL':
+                return Tree("BoolLiteral", [token_value])
         
         #@self.pg.error
         #def error_handle(token):
@@ -660,33 +699,6 @@ class Parser:
         #    raise ValueError(token)
         
         # '''
-        
-
-        # --------------------------------------------
     
     def get_parser(self):
         return self.parser
-
-    def tree_to_file(self, parse_tree, sourceFile):
-        project_root = Path(__file__).parent.resolve()
-        out_path = project_root / f"{Path(sourceFile).stem}.txt"
-
-        with open(out_path, "a", encoding="utf-8") as f:
-            f.write("\n\n---------- PARSE TREE ----------\n")
-            f.write(self.tree_format(parse_tree))
-
-    def tree_format(self, tree, indent=0, is_last=True, prefix=""):
-        branch = "└── " if is_last else "├── "
-        line = prefix + branch + str(tree[0]) + "\n" if isinstance(tree, tuple) else prefix + branch + str(tree) + "\n"
-
-        if isinstance(tree, tuple):
-            children = tree[1:]
-            for i, child in enumerate(children):
-                last = (i == len(children) - 1)
-                line += self.tree_format(child, indent + 1, last, prefix + ("    " if is_last else "│   "))
-        elif isinstance(tree, list):
-            for i, elem in enumerate(tree):
-                last = (i == len(tree) - 1)
-                line += self.tree_format(elem, indent + 1, last, prefix + ("    " if is_last else "│   "))
-        return line
-

@@ -153,13 +153,7 @@ class Lexer:
             print(f"{category.capitalize()} ({total}): {' '.join(unique_values)}")
         print(f"\nTotal tokens: {self.token_count}")
 
-    def tokens_to_file(self, filename="tokens.txt"):
-        with open(filename, "w", encoding="utf-8") as f:
-            for category, values in self.category.items():
-                f.write(
-                    f"{category.capitalize()} ({len(values)}): {' '.join(values)}\n"
-                )
-            f.write(f"\nTotal tokens: {self.token_count}\n")
+    
 
     def get_lexer(self):
         self._add_tokens()
