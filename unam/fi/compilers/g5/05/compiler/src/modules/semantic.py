@@ -1,4 +1,4 @@
-## --- semantic.py ---
+# --- semantic.py ---
 
 from nltk.tree import Tree
 
@@ -250,4 +250,5 @@ class SemanticAnalyzer:
         self.symbol_table.add_symbol(var_name, var_type_tree)
         right_type = self.visit(node[1])
         print(f"[Semantic] Parameter '{var_name}' declared with type '{var_type_tree}'")
+    
     
