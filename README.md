@@ -29,7 +29,7 @@ Using [rply's](https://pypi.org/project/rply/) parser generator the program defi
 
 The project includes a few examples of both valid and no valid source files in the directory `test`
 
-***The report can be found in docs/Team05_Compilers_Lexer.pdf***
+***The report can be found in unam/fi/compilers/g5/05/compiler/doc/05-Compilers-Parser.pdf***
 
-📄 [View the Report](unam/fi/compilers/g5/05/compiler/doc/Team05_Compilers_Lexer.pdf)
+📄 [View the Report](unam/fi/compilers/g5/05/compiler/doc/05-Compilers-Parser.pdf)
 
