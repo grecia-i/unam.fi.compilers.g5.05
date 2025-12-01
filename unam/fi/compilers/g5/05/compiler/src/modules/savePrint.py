@@ -42,7 +42,9 @@ def to_nltk_tree(node):
     return str(node)
 
 def print_and_save_tree(parse_tree, source_file):
-    """Pretty-print the parse tree and save it to the provided file (appended)."""
+    """Pretty-print the parse tree and save it to the provided file (replace previous parse-tree blocks)."""
+    import re
+
     nltk_tree = to_nltk_tree(parse_tree)
     out_path = Path(source_file)
 
@@ -51,7 +53,19 @@ def print_and_save_tree(parse_tree, source_file):
         fallback = Path(__file__).parent.parent.resolve()
         out_path = fallback / out_path.name
 
-    with open(out_path, "a", encoding="utf-8") as f:
+    # Read existing content (if any) and remove previous PARSE TREE blocks
+    existing = ""
+    if out_path.exists():
+        existing = out_path.read_text(encoding="utf-8")
+
+        # Remove all previous parse-tree sections marked by the header.
+        # Keep the rest of the file intact (tokens, TAC, etc.).
+        pattern = r"\n\n---------- PARSE TREE \(NTLK STYLE\) ----------\n(?:.*?)(?=(\n\n---------- PARSE TREE \(NTLK STYLE\) ----------\n)|\Z)"
+        existing = re.sub(pattern, "\n\n", existing, flags=re.DOTALL)
+
+    # Write back the cleaned content and append the single new parse-tree block
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(existing)
         f.write("\n\n---------- PARSE TREE (NTLK STYLE) ----------\n")
         f.write(nltk_tree.pformat())
-    print(f"\nParse tree appended to: {out_path}")
+    print(f"\nParse tree written (replacing previous blocks) to: {out_path}")
