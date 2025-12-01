@@ -1,8 +1,11 @@
 from modules.lexer import Lexer
 from modules.parser import Parser
 from modules.semantic import SemanticAnalyzer, SemanticError
-# ---  FASE 3 ---
+from modules.savePrint import *
+# --- Imports para FASE 3 (Ambas partes) ---
 from modules.codegen import CCodeGenerator
+from modules.tac_generator import TACGenerator
+from nltk.tree import Tree
 import subprocess
 # ----------------------------------------
 from nltk import Tree as NLTKTree
@@ -11,7 +14,21 @@ from copy import copy
 import os.path
 from pathlib import Path
 from rply import errors
-from modules.savePrint import *
+
+def debug_ast_structure(ast, indent=0):
+    """Función para debuggear la estructura del AST"""
+    if isinstance(ast, Tree):
+        print("  " * indent + f"Tree: {ast.label()} (len: {len(ast)})")
+        for i, child in enumerate(ast):
+            print("  " * (indent + 1) + f"Child {i}:")
+            debug_ast_structure(child, indent + 2)
+    elif isinstance(ast, list):
+        print("  " * indent + f"List: (len: {len(ast)})")
+        for i, item in enumerate(ast):
+            print("  " * (indent + 1) + f"Item {i}:")
+            debug_ast_structure(item, indent + 2)
+    else:
+        print("  " * indent + f"Value: {ast}")
 
 def main():
     if len(sys.argv) == 1:
@@ -58,8 +75,7 @@ def main():
         
         project_root = Path(__file__).parent.resolve()
         out_path =  project_root / f"{Path(sourceFile).stem}.txt" 
-        tokens_summary_path = str(out_path).replace(".txt", "_tokens.txt") # Guardar tokens aparte
-        # lexer_init.tokens_to_file(tokens_summary_path) 
+        tokens_summary_path = str(out_path).replace(".txt", "_tokens.txt") 
         print(f"Tokens summary written to: {out_path}")
 
         # --- PARSING AND SEMANTIC PHASES ---
@@ -94,27 +110,63 @@ def main():
                 analyzer.visit(parse_tree)
                 print("\nSDT Verified!") 
 
-                # --- FASE 3: CODE GENERATION (C) ---
+                # =======================================================
+                # PARTE DEL COMPAÑERO: GENERACIÓN TAC (INTERMEDIO)
+                # =======================================================
+                print("\nStarting TAC Generation...")
+                tac_generator = TACGenerator()
+                
+                if parse_tree is None:
+                    print("ERROR: parse_tree is None!")
+                    return
+                
+                tac_code = tac_generator.generate_tac(parse_tree)
+                
+                # Verificar TAC
+                if len(tac_code) == 0:
+                    print("WARNING: No TAC code generated!")
+                else:
+                    print("\nTAC Generation Success!")
+                
+                # Guardar TAC en archivo
+                tac_output_path = project_root / f"{Path(sourceFile).stem}_tac.txt"
+                with open(tac_output_path, 'w', encoding='utf-8') as f:
+                    f.write("THREE ADDRESS CODE (TAC):\n")
+                    f.write("=" * 50 + "\n")
+                    for line in tac_code:
+                        f.write(line + "\n")
+                
+                # Mostrar TAC en consola
+                print("=" * 50)
+                print("THREE ADDRESS CODE (TAC):")
+                if len(tac_code) > 0:
+                    for line in tac_code:
+                        print(line)
+                print("=" * 50)
+                print(f"TAC saved to: {tac_output_path}")
+
+                # =======================================================
+                # TU PARTE: GENERACIÓN C Y COMPILACIÓN (FINAL)
+                # =======================================================
                 print("\nGenerating C code...")
                 generator = CCodeGenerator()
                 generator.visit(parse_tree)
                 
-                # 1. Save the .c file in the same folder as the .go file
+                # 1. Guardar archivo .c
                 c_path = Path(sourceFile).with_suffix('.c')
                 with open(c_path, "w") as f:
                     f.write(generator.get_code())
                 print(f"C code generated in: {c_path}")
                 
-                # 2. Compile with GCC (Automatic Attempt)
+                # 2. Compilar con GCC
                 try:
                     exe_path = Path(sourceFile).with_suffix('.exe')
                     print(f"Compiling with GCC -> {exe_path.name}...")
                     
-                    # System call for gcc
                     subprocess.run(["gcc", str(c_path), "-o", str(exe_path)], check=True)
                     print("¡Successful Compilation!")
                     
-                    # 3. Run (Optional)
+                    # 3. Ejecutar
                     print(f"\n--- EXECUTING {exe_path.name} ---")
                     subprocess.run([str(exe_path)]) 
                     print("\n--- END OF EXECUTION ---")
@@ -122,7 +174,6 @@ def main():
                 except FileNotFoundError:
                     print("\nWARNING: The 'gcc' command was not found.")
                     print(f"File C was indeed generated in: {c_path}")
-                    print("You can compile it manually or install MinGW.")
                 except subprocess.CalledProcessError:
                     print("\nERROR: GCC failed to compile the generated C file.")
 
