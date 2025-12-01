@@ -2,11 +2,12 @@
 from nltk.tree import Tree
 
 class TACGenerator:
-    def __init__(self):
+    def __init__(self, printer=None):
         self.temp_counter = 0
         self.label_counter = 0
         self.code = []
         self.current_function = None
+        self.printer = printer or (lambda msg: None)
         
     def new_temp(self):
         temp = f"t{self.temp_counter}"
@@ -25,7 +26,7 @@ class TACGenerator:
         self.label_counter = 0
         self.current_function = None
         
-        print(f"[TAC] Processing AST of type: {type(ast)}")
+        self.printer(f"[TAC] Processing AST of type: {type(ast)}")
         
         # Handle different AST structures
         if isinstance(ast, Tree):
@@ -35,22 +36,22 @@ class TACGenerator:
                 # If it's not a SourceFile, try to process it directly
                 self.process_top_level_decl(ast)
         elif isinstance(ast, list):
-            print(f"[TAC] Processing list with {len(ast)} elements")
+            self.printer(f"[TAC] Processing list with {len(ast)} elements")
             for item in ast:
                 self.process_top_level_decl(item)
         else:
-            print(f"[TAC] Warning: Unknown AST type: {type(ast)}")
+            self.printer(f"[TAC] Warning: Unknown AST type: {type(ast)}")
         
         return self.code
 
     def process_source_file(self, node):
         """Process SourceFile node"""
-        print(f"[TAC] Processing SourceFile with {len(node)} children")
+        self.printer(f"[TAC] Processing SourceFile with {len(node)} children")
         
         for child in node:
             if isinstance(child, Tree):
                 child_label = child.label()
-                print(f"[TAC] Processing child: {child_label}")
+                self.printer(f"[TAC] Processing child: {child_label}")
                 
                 if child_label == 'PackageClause':
                     continue
@@ -62,47 +63,47 @@ class TACGenerator:
                     # Try to process unknown nodes as top level declarations
                     self.process_top_level_decl(child)
             else:
-                print(f"[TAC] Skipping non-tree child: {child}")
+                self.printer(f"[TAC] Skipping non-tree child: {child}")
 
     def process_top_level_decls(self, node):
         """Process TopLevelDecls node"""
-        print(f"[TAC] Processing TopLevelDecls with {len(node)} children")
+        self.printer(f"[TAC] Processing TopLevelDecls with {len(node)} children")
         
         for i, decl in enumerate(node):
-            print(f"[TAC] Processing declaration {i}: {type(decl)}")
+            self.printer(f"[TAC] Processing declaration {i}: {type(decl)}")
             if isinstance(decl, Tree):
                 self.process_top_level_decl(decl)
 
     def process_top_level_decl(self, decl):
         """Process a top level declaration"""
         if not isinstance(decl, Tree):
-            print(f"[TAC] Skipping non-tree declaration: {decl}")
+            self.printer(f"[TAC] Skipping non-tree declaration: {decl}")
             return
             
         decl_type = decl.label()
-        print(f"[TAC] Processing {decl_type}")
+        self.printer(f"[TAC] Processing {decl_type}")
         
         if decl_type == 'TopLevelDecl':
             if len(decl) > 0 and isinstance(decl[0], Tree):
                 inner_decl = decl[0]
                 inner_type = inner_decl.label()
-                print(f"[TAC] Inner declaration: {inner_type}")
+                self.printer(f"[TAC] Inner declaration: {inner_type}")
                 
                 if inner_type == 'FunctionDecl':
                     self.process_function_decl(inner_decl)
                 else:
-                    print(f"[TAC] Unsupported inner declaration: {inner_type}")
+                    self.printer(f"[TAC] Unsupported inner declaration: {inner_type}")
             else:
-                print(f"[TAC] Empty or invalid TopLevelDecl")
+                self.printer(f"[TAC] Empty or invalid TopLevelDecl")
         elif decl_type == 'FunctionDecl':
             self.process_function_decl(decl)
         else:
-            print(f"[TAC] Unsupported top level declaration: {decl_type}")
+            self.printer(f"[TAC] Unsupported top level declaration: {decl_type}")
     
     def process_function_decl(self, func_decl):
         """Process FunctionDecl node"""
         if not isinstance(func_decl, Tree) or len(func_decl) < 2:
-            print(f"[TAC] Invalid FunctionDecl: {func_decl}")
+            self.printer(f"[TAC] Invalid FunctionDecl: {func_decl}")
             return
             
         # Extract function name
@@ -112,7 +113,7 @@ class TACGenerator:
         else:
             func_name = "unknown"
         
-        print(f"[TAC] Processing function: {func_name}")
+        self.printer(f"[TAC] Processing function: {func_name}")
         
         # Set current function
         self.current_function = func_name
@@ -128,7 +129,7 @@ class TACGenerator:
                     params = signature[1]
                     if isinstance(params, Tree) and params.label() == 'Parameters':
                         # Parameters are already in scope, no TAC needed
-                        print(f"[TAC] Function {func_name} has parameters")
+                        self.printer(f"[TAC] Function {func_name} has parameters")
         
         # Process function body
         if len(func_decl) > 2:
@@ -136,9 +137,9 @@ class TACGenerator:
             if isinstance(body, Tree) and body.label() == 'Block':
                 self.process_block(body)
             else:
-                print(f"[TAC] Function {func_name} has no block body")
+                self.printer(f"[TAC] Function {func_name} has no block body")
         else:
-            print(f"[TAC] Function {func_name} has no body")
+            self.printer(f"[TAC] Function {func_name} has no body")
         
         # Add function end marker
         self.code.append(f"END_FUNC {func_name}")
@@ -149,7 +150,7 @@ class TACGenerator:
         if not isinstance(block, Tree):
             return
             
-        print(f"[TAC] Processing block with {len(block)} children")
+        self.printer(f"[TAC] Processing block with {len(block)} children")
         
         for child in block:
             if isinstance(child, Tree) and child.label() == 'StatementList':
@@ -161,7 +162,7 @@ class TACGenerator:
         if not isinstance(stmt_list, Tree):
             return
             
-        print(f"[TAC] Processing statement list with {len(stmt_list)} statements")
+        self.printer(f"[TAC] Processing statement list with {len(stmt_list)} statements")
         
         for stmt in stmt_list:
             self.process_statement(stmt)
@@ -169,11 +170,11 @@ class TACGenerator:
     def process_statement(self, stmt):
         """Process individual statement"""
         if not isinstance(stmt, Tree):
-            print(f"[TAC] Skipping non-tree statement: {stmt}")
+            self.printer(f"[TAC] Skipping non-tree statement: {stmt}")
             return
             
         stmt_type = stmt.label()
-        print(f"[TAC] Processing statement: {stmt_type}")
+        self.printer(f"[TAC] Processing statement: {stmt_type}")
         
         if stmt_type == 'IfStmt':
             self.process_if_statement(stmt)
@@ -192,15 +193,15 @@ class TACGenerator:
         elif stmt_type == 'IncDecStmt':
             self.process_inc_dec_statement(stmt)
         else:
-            print(f"[TAC] Unsupported statement type: {stmt_type}")
+            self.printer(f"[TAC] Unsupported statement type: {stmt_type}")
     
     def process_if_statement(self, if_stmt):
         """Process IfStmt node"""
         if not isinstance(if_stmt, Tree) or len(if_stmt) < 3:
-            print(f"[TAC] Invalid IfStmt: {if_stmt}")
+            self.printer(f"[TAC] Invalid IfStmt: {if_stmt}")
             return
             
-        print(f"[TAC] Processing if statement")
+        self.printer(f"[TAC] Processing if statement")
         
         # Process condition
         condition = if_stmt[0]
@@ -270,10 +271,10 @@ class TACGenerator:
     def process_for_statement(self, for_stmt):
         """Process ForStmt node"""
         if not isinstance(for_stmt, Tree) or len(for_stmt) < 2:
-            print(f"[TAC] Invalid ForStmt: {for_stmt}")
+            self.printer(f"[TAC] Invalid ForStmt: {for_stmt}")
             return
             
-        print(f"[TAC] Processing for statement")
+        self.printer(f"[TAC] Processing for statement")
         
         start_label = self.new_label()
         end_label = self.new_label()
@@ -320,7 +321,7 @@ class TACGenerator:
         if not isinstance(return_stmt, Tree):
             return
             
-        print(f"[TAC] Processing return statement")
+        self.printer(f"[TAC] Processing return statement")
         
         if len(return_stmt) > 0:
             return_value = self.process_expression(return_stmt[0])
@@ -364,7 +365,7 @@ class TACGenerator:
         if not isinstance(short_decl, Tree):
             return
             
-        print(f"[TAC] Processing short var declaration")
+        self.printer(f"[TAC] Processing short var declaration")
         
         # Handle nested ShortVarDecl structure
         if len(short_decl) > 0 and isinstance(short_decl[0], Tree) and short_decl[0].label() == 'ShortVarDecl':
