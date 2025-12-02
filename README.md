@@ -11,10 +11,19 @@ The tokens are saved to a `.txt` file.
 ### Parser / SDT
 Using [rply's](https://pypi.org/project/rply/) parser generator the program defines our language's grammar and structure, for every production it assigns a semantic action and produces a node of the program's parse tree, this parse tree is outputed as a nltk style tree in src/program.txt, afterwards it starts a phase of semantic analysis to verify the context of every production.
 
+### Code generation
+For this phase we followed two parallel methodologies:
+- **TAC -> Assembly:** The SDT is converted to TAC and then to assembly code, this code is then assembled using [NASM](https://www.nasm.us/).
+
+- **SDT -> C:** The operations in the SDT are converted to C code constructs in standard C syntax, this intermediate C code is then processed by GCC.
+
+
+
 ### Requirements
 
 - python 3.8+
 - [rply](https://pypi.org/project/rply/)
+- [GCC](https://gcc.gnu.org/)
 
     #### How to run
     Install the dependencies with:
@@ -27,9 +36,16 @@ Using [rply's](https://pypi.org/project/rply/) parser generator the program defi
 
     If the source code is valid the program will output a summary of the tokens as well as a parse tree for the source file and save them to a `.txt` file
 
+    #### Flags
+    - --f: Verbose output, generates text output for all phases and saves the intermediate code file in `compiler/build/`. 
+
 The project includes a few examples of both valid and no valid source files in the directory `test`
 
-***The report can be found in unam/fi/compilers/g5/05/compiler/doc/05-Compilers-Parser.pdf***
+***The reports for every phase can be found in unam/fi/compilers/g5/05/compiler/doc/***
 
-📄 [View the Report](unam/fi/compilers/g5/05/compiler/doc/05-Compilers-Parser.pdf)
+📄 [Lexer](unam/fi/compilers/g5/05/compiler/doc/Team05-Compilers-Lexer.pdf)
+
+📄 [Parser](unam/fi/compilers/g5/05/compiler/doc/05-Compilers-Parser.pdf)
+
+📄 [Compiler](unam/fi/compilers/g5/05/compiler/doc/05-Compilers-Final.pdf)
 
