@@ -509,19 +509,27 @@ class Parser:
         def stmt_return(p):
             return Tree("ReturnStmt", [p[1]])
 
-        # IF / ELSE
-        @self.pg.production("Statement : KW_IF Expression Block")
+        # REEMPLAZAR las tres producciones actuales con:
+
+        # if básico: if (condición) { bloque }
+        @self.pg.production("Statement : KW_IF PUNC_LPAREN Expression PUNC_RPAREN Block")
         def if_stmt(p):
+            return Tree("IfStmt", [p[2], p[4]])  # Condition, Block
+
+        @self.pg.production("Statement : KW_IF Expression Block")
+        def if_stmt_nop(p):
             return Tree("IfStmt", [p[1], p[2]])
 
-        @self.pg.production("Statement : KW_IF Expression Block KW_ELSE Statement")
+        # if-else: if (condición) { bloque } else { bloque }
+        @self.pg.production("Statement : KW_IF PUNC_LPAREN Expression PUNC_RPAREN Block KW_ELSE Block")
         def if_else_stmt(p):
-            return Tree("IfElseStmt", [p[1], p[2], p[4]])
+            return Tree("IfElseStmt", [p[2], p[4], p[6]])  # Condition, IfBlock, ElseBlock
 
-        @self.pg.production("Statement : KW_IF Expression Block KW_ELSE KW_IF Expression Block")
-        def if_else_if_stmt(p):
-            else_if_part = Tree("IfStmt", [p[5], p[6]])
-            return Tree("IfElseStmt", [p[1], p[2], else_if_part])
+        # if-else if-else (anidado)
+        @self.pg.production("Statement : KW_IF PUNC_LPAREN Expression PUNC_RPAREN Block KW_ELSE Statement")
+        def if_else_chain(p):
+            # El "Statement" en KW_ELSE Statement puede ser otro if o un bloque
+            return Tree("IfElseStmt", [p[2], p[4], p[6]])  # Condition, IfBlock, ElsePart
 
         # SWITCH / CASE / DEFAULT
         @self.pg.production("Statement : KW_SWITCH Expression PUNC_LBRACE CaseClauses PUNC_RBRACE")

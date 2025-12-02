@@ -124,16 +124,15 @@ def write_tac(tac_lines, source_file):
     if out_path.exists():
         existing = out_path.read_text(encoding="utf-8")
         # Remove previous TAC blocks marked by the header
-        pattern = r"\n\n------------- THREE ADDRESS CODE \(TAC\): ------------\n(?:.*?)(?=(\n\n------------- THREE ADDRESS CODE \(TAC\): ------------\n)|\Z)"
+        pattern = r"\n\n--------- THREE ADDRESS CODE \(TAC\): --------\n(?:.*?)(?=(\n\n------------- THREE ADDRESS CODE \(TAC\): ------------\n)|\Z)"
         existing = re.sub(pattern, "\n\n", existing, flags=re.DOTALL)
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(existing)
-        f.write("\n\n------------- THREE ADDRESS CODE (TAC): ------------\n")
-        f.write("=" * 50 + "\n")
+        f.write("\n\n--------- THREE ADDRESS CODE (TAC): --------\n")
         for line in tac_lines:
             f.write(line + "\n")
-    print(f"\nTAC written to: {out_path}")
+    #print(f"\nTAC written to: {out_path}")
 
 def write_output_log(source_file, phase, messages, is_error=False, clear_first=False):
     build_dir = ensure_build_dir()

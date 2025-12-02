@@ -444,18 +444,36 @@ class TACToNASM64:
         self.text_section.append("    ; Fin de println")
     
     def get_var_location(self, var_name):
+        # Si es una expresión constante, calcularla
+        cleaned_var = var_name.replace(' ', '')
+        if re.match(r'^\d+[\s]*[+\-*/%][\s]*\d+$', cleaned_var):
+            # Es una expresión constante simple, calcular valor
+            try:
+                result = eval(cleaned_var)
+                # Si es división, asegurar resultado entero
+                if '/' in cleaned_var:
+                    left, right = cleaned_var.split('/')
+                    result = int(left) // int(right)
+                return str(int(result))  # Devolver el valor literal como entero
+            except:
+                pass
+
         if self.current_function:
             if var_name in self.local_vars:
                 return self.local_vars[var_name]
             elif var_name in self.param_vars:
                 return self.param_vars[var_name]
         
-        # GLOBAL VAR
-        if var_name not in self.global_vars:
-            self.global_vars.add(var_name)
-            self.bss_section.append(f"    {var_name} resd 1")
-        
-        return f"[{var_name}]"
+        # GLOBAL VAR - solo crear si es un nombre válido
+        if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', var_name):
+            if var_name not in self.global_vars:
+                self.global_vars.add(var_name)
+                self.bss_section.append(f"    {var_name} resd 1")
+            
+            return f"[{var_name}]"
+        else:
+            # Si no es nombre válido, tratarlo como constante
+            return var_name
     
     def process_function_call(self, func_name, args, has_dest, dest):
         self.text_section.append(f"    ; CALL {func_name}")
@@ -528,12 +546,55 @@ class TACToNASM64:
     
     def process_binary_operation(self, dest_loc, expr):
         """binary operation x = y op z"""
-        for op in [' <= ', ' < ', ' >= ', ' > ', ' == ', ' != ', ' + ', ' - ', ' * ', ' / ']:
+        for op in [' <= ', ' < ', ' >= ', ' > ', ' == ', ' != ', ' + ', ' - ', ' * ', ' / ', ' % ']:
             if op in expr:
                 left, right = expr.split(op, 1)
                 left = left.strip()
                 right = right.strip()
                 operator = op.strip()
+                
+                # Si ambos operandos son constantes numéricas, calcular inmediatamente
+                if (left.isdigit() or (left[0] == '-' and left[1:].isdigit())) and \
+                (right.isdigit() or (right[0] == '-' and right[1:].isdigit())):
+                    try:
+                        left_val = int(left)
+                        right_val = int(right)
+                        result = 0
+                        if operator == '+':
+                            result = left_val + right_val
+                        elif operator == '-':
+                            result = left_val - right_val
+                        elif operator == '*':
+                            result = left_val * right_val
+                        elif operator == '/':
+                            if right_val != 0:
+                                result = left_val // right_val  # División entera
+                                result = int(result)
+                            else:
+                                result = 0
+                        elif operator == '%':
+                            if right_val != 0:
+                                result = left_val % right_val
+                            else:
+                                result = 0
+                        # Para comparaciones, resultado booleano
+                        elif operator == '==':
+                            result = 1 if left_val == right_val else 0
+                        elif operator == '!=':
+                            result = 1 if left_val != right_val else 0
+                        elif operator == '<':
+                            result = 1 if left_val < right_val else 0
+                        elif operator == '<=':
+                            result = 1 if left_val <= right_val else 0
+                        elif operator == '>':
+                            result = 1 if left_val > right_val else 0
+                        elif operator == '>=':
+                            result = 1 if left_val >= right_val else 0
+                        
+                        self.text_section.append(f"    mov dword {dest_loc}, {result}")
+                        return
+                    except:
+                        pass  # Si hay error, seguir con el método normal
                 
                 # LEFT SIDE 
                 if left.isdigit() or (left[0] == '-' and left[1:].isdigit()):
@@ -549,10 +610,26 @@ class TACToNASM64:
                     self.process_comparison_operation(operator, right)
                 elif operator == '/':
                     self.process_division_operation(right)
+                elif operator == '%':
+                    self.process_modulo_operation(right)
                 
                 self.text_section.append(f"    mov {dest_loc}, eax")
                 break
     
+    def process_modulo_operation(self, right):
+        self.text_section.append("    cdq")  # Extiende EAX a EDX:EAX
+        
+        if right.isdigit() or (right[0] == '-' and right[1:].isdigit()):
+            self.text_section.append(f"    mov ecx, {right}")
+            self.text_section.append("    idiv ecx")
+        else:
+            right_loc = self.get_var_location(right)
+            self.text_section.append(f"    mov ecx, {right_loc}")
+            self.text_section.append("    idiv ecx")
+        
+        # El módulo queda en EDX después de IDIV
+        self.text_section.append("    mov eax, edx")
+
     def process_arithmetic_operation(self, operator, right):
         """Procesa operación aritmética"""
         if right.isdigit() or (right[0] == '-' and right[1:].isdigit()):
@@ -644,7 +721,7 @@ def write_nasm64_file(tac_file_path, output_dir=None):
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(nasm_code)
         
-        print(f"NASM file generated")
+        print(f"ASM file generated")
         
         try:
             obj_path = output_dir / f"{output_name}.obj"

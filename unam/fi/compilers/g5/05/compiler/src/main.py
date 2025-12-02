@@ -269,7 +269,6 @@ def main():
                     tac_file_path = build_dir / f"{output_name}_tac.txt"
                     with open(tac_file_path, "w") as f:
                         f.write("THREE ADDRESS CODE (TAC):\n")
-                        f.write("=" * 50 + "\n")
                         for line in tac_code:
                             f.write(line + "\n")
                     

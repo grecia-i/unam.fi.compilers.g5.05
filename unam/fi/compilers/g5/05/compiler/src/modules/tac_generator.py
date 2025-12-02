@@ -179,6 +179,8 @@ class TACGenerator:
         
         if stmt_type == 'IfStmt':
             self.process_if_statement(stmt)
+        elif stmt_type == 'IfElseStmt':  # <-- AÑADE ESTA LÍNEA
+            self.process_if_else_statement(stmt)
         elif stmt_type == 'DeclStmt':
             self.process_decl_statement(stmt)
         elif stmt_type == 'ForStmt':
@@ -230,6 +232,32 @@ class TACGenerator:
                 self.process_block(false_block)
         
         # End label
+        self.code.append(f"LABEL {end_label}:")
+
+    def process_if_else_statement(self, if_else_stmt):
+        if not isinstance(if_else_stmt, Tree) or len(if_else_stmt) < 3:
+            self.printer(f"[TAC] Invalid IfElseStmt: {if_else_stmt}")
+            return
+            
+        self.printer(f"[TAC] Processing if-else statement")
+        condition = if_else_stmt[0]
+        cond_temp = self.process_expression(condition)
+        false_label = self.new_label()
+        end_label = self.new_label()
+        
+        self.code.append(f"IF_FALSE {cond_temp} GOTO {false_label}")
+        
+        true_block = if_else_stmt[1]
+        if isinstance(true_block, Tree) and true_block.label() == 'Block':
+            self.process_block(true_block)
+        self.code.append(f"GOTO {end_label}")
+        
+        self.code.append(f"LABEL {false_label}:")
+        
+        false_block = if_else_stmt[2]
+        if isinstance(false_block, Tree) and false_block.label() == 'Block':
+            self.process_block(false_block)
+        
         self.code.append(f"LABEL {end_label}:")
     
     def process_decl_statement(self, decl_stmt):
