@@ -13,9 +13,9 @@ Using [rply's](https://pypi.org/project/rply/) parser generator the program defi
 
 ### Code generation
 For this phase we followed two parallel methodologies:
-- **TAC -> Assembly:** The SDT is converted to TAC and then to assembly code, this code is then assembled using [NASM](https://www.nasm.us/).
+- **TAC -> Assembly:** The SDT is converted to TAC and then to assembly code, this code is then assembled using [NASM](https://www.nasm.us/) and linked with [GCC](https://gcc.gnu.org/).
 
-- **SDT -> C:** The operations in the SDT are converted to C code constructs in standard C syntax, this intermediate C code is then processed by GCC.
+- **SDT -> C:** The operations in the SDT are converted to C code constructs in standard C syntax, this intermediate C code is then processed by [GCC](https://gcc.gnu.org/).
 
 
 
