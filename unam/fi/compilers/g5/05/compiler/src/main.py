@@ -4,6 +4,7 @@ from modules.semantic import SemanticAnalyzer, SemanticError
 from modules.utilities import *
 from modules.codegen import CCodeGenerator
 from modules.tac_generator import TACGenerator
+from modules.tac_nasm import *
 from nltk.tree import Tree
 
 import subprocess
@@ -248,7 +249,7 @@ def main():
                     with open(c_path, "w") as f:
                         f.write(generator.get_code())
                     cgen_messages.append(f"C code generated in: {c_path}")
-                    print(f"C code generated in: {c_path}")
+                    print(f"C code generated")
                 else:
                     cgen_messages.append("C code generated (not saved to file)")
                     print("C code generated")
@@ -260,6 +261,44 @@ def main():
                 # save log
                 log_to_file_only(sourceFile, "codegen_c", cgen_messages)
                 
+                # Generar NASM
+                try:
+                    from modules.tac_nasm import write_nasm64_file
+                    
+                    # Guardar TAC a archivo temporal
+                    tac_file_path = build_dir / f"{output_name}_tac.txt"
+                    with open(tac_file_path, "w") as f:
+                        f.write("THREE ADDRESS CODE (TAC):\n")
+                        f.write("=" * 50 + "\n")
+                        for line in tac_code:
+                            f.write(line + "\n")
+                    
+                    # Convertir a NASM y ensamblar
+                    
+                    exe_path_nasm = write_nasm64_file(tac_file_path, build_dir)
+                    
+                    if exe_path_nasm and os.path.exists(exe_path_nasm):
+                        try:
+                            result = subprocess.run(
+                                [str(exe_path_nasm)], 
+                                capture_output=True, 
+                                text=True,
+                                shell=True,  # Importante para Windows
+                                cwd=build_dir
+                            )
+                                
+                        except Exception as e:
+                            print(f"Error ejecutando NASM: {e}")
+                    else:
+                        print("⚠ No se pudo generar el ejecutable NASM")
+                        
+                except ImportError as e:
+                    print(f"Módulo tac_nasm no encontrado: {e}")
+                except Exception as e:
+                    print(f"Error generando NASM: {e}")
+                    import traceback
+                    traceback.print_exc()
+
                 # -- GCC compiling
                 try:
                     exe_path = build_dir / f"{output_name}.exe"

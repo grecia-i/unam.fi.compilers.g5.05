@@ -5,6 +5,7 @@ class TACGenerator:
     def __init__(self, printer=None):
         self.temp_counter = 0
         self.label_counter = 0
+        self.string_counter = 0
         self.code = []
         self.current_function = None
         self.printer = printer or (lambda msg: None)
@@ -489,6 +490,19 @@ class TACGenerator:
             if len(expr) > 0:
                 return expr[0]
             return "0"
+
+        elif expr_type == 'StringLiteral' or expr_type == 'String':
+            # create a unique data label and emit DATA entry
+            if len(expr) > 0:
+                raw = expr[0]
+            else:
+                raw = '""'
+            label = f"str_{self.string_counter}"
+            self.string_counter += 1
+            # ensure raw is properly quoted (keep original quotes if present)
+            value = raw if (raw.startswith('"') and raw.endswith('"')) else f'"{raw}"'
+            self.code.append(f"DATA {label} = {value}")
+            return label
         
         elif expr_type == 'BinaryExpr':
             if len(expr) < 3:
